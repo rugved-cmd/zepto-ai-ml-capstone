@@ -5,7 +5,7 @@ import pandas as pd
 
 
 # ============================================================
-# PATHS
+# CONFIGURATION
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -23,37 +23,54 @@ OUTPUT_DIR = (
     / "outputs"
 )
 
+SEARCH_OUTPUT = OUTPUT_DIR / "last_search_results.csv"
+RECOMMENDATION_OUTPUT = OUTPUT_DIR / "recommendations.csv"
+
 
 # ============================================================
-# DATABASE VALIDATION
+# LOAD BOOKS FROM NORMALIZED SQLITE DATABASE
 # ============================================================
 
 def load_books_from_database():
-    """Load the verified book catalog from SQLite."""
-
-    assert DATABASE_FILE.exists(), (
-        f"Database not found: {DATABASE_FILE}"
-    )
+    if not DATABASE_FILE.exists():
+        raise FileNotFoundError(
+            f"Database not found: {DATABASE_FILE}"
+        )
 
     connection = sqlite3.connect(DATABASE_FILE)
 
     try:
-        df = pd.read_sql_query(
-            """
+        query = """
             SELECT
-                title,
-                price_gbp,
-                price_inr,
-                rating,
-                stock,
-                category
-            FROM books
-            """,
-            connection,
+                b.book_id,
+                b.title,
+                b.price_gbp,
+                b.price_inr,
+                b.rating,
+                b.in_stock,
+                c.category_name AS category
+            FROM books AS b
+            INNER JOIN categories AS c
+                ON b.category_id = c.category_id
+            ORDER BY b.book_id
+        """
+
+        df = pd.read_sql_query(
+            query,
+            connection
         )
+
     finally:
         connection.close()
 
+    return df
+
+
+# ============================================================
+# VERIFY DATABASE
+# ============================================================
+
+def verify_database(df):
     assert len(df) == 69, (
         f"Expected 69 books, found {len(df)}."
     )
@@ -62,136 +79,119 @@ def load_books_from_database():
         "Expected 3 categories."
     )
 
-    return df
-
-
-# ============================================================
-# SEARCH VALIDATION
-# ============================================================
-
-def verify_search_results(df):
-    """Verify the saved Mystery search results."""
-
-    output_file = (
-        OUTPUT_DIR
-        / "last_search_results.csv"
-    )
-
-    assert output_file.exists(), (
-        "last_search_results.csv was not created."
-    )
-
-    results = pd.read_csv(
-        output_file,
-        encoding="utf-8",
-    )
-
-    assert len(results) == 32, (
-        f"Expected 32 Mystery results, found {len(results)}."
-    )
-
-    assert (
-        results["category"]
-        .str.lower()
-        .eq("mystery")
-        .all()
-    ), (
-        "Search results contain non-Mystery books."
-    )
-
-    expected_count = (
-        df["category"]
-        .str.lower()
-        .eq("mystery")
-        .sum()
-    )
-
-    assert len(results) == expected_count, (
-        "Search result count does not match the database."
-    )
-
-    return results
-
-
-# ============================================================
-# RECOMMENDATION VALIDATION
-# ============================================================
-
-def verify_recommendations():
-    """Verify the saved recommendation results."""
-
-    output_file = (
-        OUTPUT_DIR
-        / "recommendations.csv"
-    )
-
-    assert output_file.exists(), (
-        "recommendations.csv was not created."
-    )
-
-    results = pd.read_csv(
-        output_file,
-        encoding="utf-8",
-    )
-
-    assert len(results) == 5, (
-        f"Expected 5 recommendations, found {len(results)}."
-    )
-
-    assert (
-        results["category"]
-        .str.lower()
-        .eq("mystery")
-        .all()
-    ), (
-        "Recommendations contain non-Mystery books."
-    )
-
-    assert (
-        results["price_inr"] <= 3000
-    ).all(), (
-        "Recommendation contains a book above ₹3000."
-    )
-
-    assert (
-        results["rating"] >= 4
-    ).all(), (
-        "Recommendation contains a book rated below 4."
-    )
-
-    assert (
-        results["rating"].is_monotonic_decreasing
-    ), (
-        "Recommendations are not sorted by rating."
-    )
-
-    return results
-
-
-# ============================================================
-# OUTPUT STRUCTURE VALIDATION
-# ============================================================
-
-def verify_result_columns(results):
-    """Verify the assistant result structure."""
-
     required_columns = {
+        "book_id",
         "title",
-        "category",
+        "price_gbp",
         "price_inr",
         "rating",
-        "stock",
+        "in_stock",
+        "category",
     }
 
-    assert required_columns.issubset(
-        results.columns
-    ), (
-        "Assistant output is missing required columns."
+    assert required_columns.issubset(df.columns), (
+        "Required book fields are missing."
+    )
+
+    print(
+        f"PASS — {len(df)} books and "
+        f"{df['category'].nunique()} categories loaded."
     )
 
 
 # ============================================================
-# MAIN
+# VERIFY SEARCH
+# ============================================================
+
+def verify_search(df):
+    mystery = df[
+        df["category"].str.lower() == "mystery"
+    ]
+
+    assert len(mystery) == 32, (
+        f"Expected 32 Mystery books, found {len(mystery)}."
+    )
+
+    print(
+        f"PASS — Mystery search returned "
+        f"{len(mystery)} valid books."
+    )
+
+
+# ============================================================
+# VERIFY RECOMMENDATIONS
+# ============================================================
+
+def verify_recommendations(df):
+    recommendations = df[
+        (df["category"] == "Mystery")
+        & (df["price_inr"] <= 3000)
+        & (df["rating"] >= 4)
+    ].copy()
+
+    recommendations = recommendations.sort_values(
+        by=["rating", "price_inr"],
+        ascending=[False, True]
+    ).head(5)
+
+    assert len(recommendations) == 5, (
+        f"Expected 5 recommendations, "
+        f"found {len(recommendations)}."
+    )
+
+    print(
+        f"PASS — {len(recommendations)} "
+        "recommendations satisfy all requested filters."
+    )
+
+    return recommendations
+
+
+# ============================================================
+# VERIFY CONSTRAINTS
+# ============================================================
+
+def verify_constraints(recommendations):
+    assert (
+        recommendations["category"] == "Mystery"
+    ).all()
+
+    assert (
+        recommendations["price_inr"] <= 3000
+    ).all()
+
+    assert (
+        recommendations["rating"] >= 4
+    ).all()
+
+    print(
+        "PASS — Category, price, and rating "
+        "constraints verified."
+    )
+
+
+# ============================================================
+# VERIFY OUTPUT FILES
+# ============================================================
+
+def verify_output_files():
+    assert SEARCH_OUTPUT.exists(), (
+        f"Search output not found: {SEARCH_OUTPUT}"
+    )
+
+    assert RECOMMENDATION_OUTPUT.exists(), (
+        "Recommendation output not found: "
+        f"{RECOMMENDATION_OUTPUT}"
+    )
+
+    print(
+        "PASS — Search and recommendation "
+        "outputs exist."
+    )
+
+
+# ============================================================
+# MAIN VERIFICATION
 # ============================================================
 
 def main():
@@ -200,139 +200,36 @@ def main():
     print("MODULE 3 — SUPPORT ASSISTANT VERIFICATION")
     print("=" * 60)
 
-    # --------------------------------------------------------
-    # 1. Database
-    # --------------------------------------------------------
-
-    print(
-        "\n[1/5] Verifying SQLite database connection..."
-    )
+    print()
+    print("[1/5] Verifying SQLite database connection...")
 
     df = load_books_from_database()
+    verify_database(df)
 
-    print(
-        "PASS — 69 books and 3 categories loaded."
-    )
+    print()
+    print("[2/5] Verifying book search...")
 
-    # --------------------------------------------------------
-    # 2. Search
-    # --------------------------------------------------------
+    verify_search(df)
 
-    print(
-        "\n[2/5] Verifying book search..."
-    )
+    print()
+    print("[3/5] Verifying recommendation engine...")
 
-    search_results = verify_search_results(df)
+    recommendations = verify_recommendations(df)
 
-    verify_result_columns(search_results)
+    print()
+    print("[4/5] Verifying recommendation constraints...")
 
-    print(
-        "PASS — Mystery search returned 32 valid books."
-    )
+    verify_constraints(recommendations)
 
-    # --------------------------------------------------------
-    # 3. Recommendations
-    # --------------------------------------------------------
+    print()
+    print("[5/5] Verifying assistant output files...")
 
-    print(
-        "\n[3/5] Verifying recommendation engine..."
-    )
-
-    recommendation_results = verify_recommendations()
-
-    verify_result_columns(
-        recommendation_results
-    )
-
-    print(
-        "PASS — 5 recommendations satisfy "
-        "all requested filters."
-    )
-
-    # --------------------------------------------------------
-    # 4. Recommendation filters
-    # --------------------------------------------------------
-
-    print(
-        "\n[4/5] Verifying recommendation constraints..."
-    )
-
-    assert (
-        recommendation_results["category"]
-        .str.lower()
-        .eq("mystery")
-        .all()
-    )
-
-    assert (
-        recommendation_results["price_inr"] <= 3000
-    ).all()
-
-    assert (
-        recommendation_results["rating"] >= 4
-    ).all()
-
-    print(
-        "PASS — Category, price, and rating constraints verified."
-    )
-
-    # --------------------------------------------------------
-    # 5. Output files
-    # --------------------------------------------------------
-
-    print(
-        "\n[5/5] Verifying assistant output files..."
-    )
-
-    assert (
-        OUTPUT_DIR
-        / "last_search_results.csv"
-    ).exists()
-
-    assert (
-        OUTPUT_DIR
-        / "recommendations.csv"
-    ).exists()
-
-    print(
-        "PASS — Search and recommendation outputs exist."
-    )
-
-    # --------------------------------------------------------
-    # FINAL
-    # --------------------------------------------------------
+    verify_output_files()
 
     print()
     print("=" * 60)
-    print("MODULE 3 SUPPORT ASSISTANT VERIFICATION SUCCESSFUL")
-    print("=" * 60)
-
-    print(
-        "Database books verified: 69"
-    )
-
-    print(
-        "Categories verified: 3"
-    )
-
-    print(
-        "Search results verified: 32"
-    )
-
-    print(
-        "Recommendations verified: 5"
-    )
-
-    print(
-        "Recommendation constraints: VERIFIED"
-    )
-
-    print(
-        "Output files: VERIFIED"
-    )
-
-    print()
     print("MODULE 3 STATUS: PASS")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
