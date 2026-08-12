@@ -1,0 +1,9 @@
+MODULE 2 — BUSINESS INSIGHTS
+==================================================
+
+1. Largest category: Mystery with 32 books.
+2. Highest average-priced category: Travel at INR 4198.32.
+3. Highest average-rated category: Historical Fiction with an average rating of 3.23.
+4. Overall average book price: INR 3558.71.
+5. Most common rating: 3/5 with 16 books.
+6. Books rated 4/5 or higher: 27 out of 69.

@@ -1,0 +1,4 @@
+category,book_count,average_price_inr,average_rating,minimum_price_inr,maximum_price_inr
+Mystery,32,3346.36,2.94,1127.79,6275.14
+Historical Fiction,26,3549.47,3.23,1753.41,5860.52
+Travel,11,4198.32,2.73,2448.66,6000.84
