@@ -46,9 +46,10 @@ def load_books():
                 price_gbp,
                 price_inr,
                 rating,
-                stock,
-                category
-            FROM books
+                in_stock AS stock,
+                c.category_name AS category
+            FROM books b
+            JOIN categories c ON b.category_id = c.category_id
             """,
             connection,
         )
@@ -512,3 +513,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
