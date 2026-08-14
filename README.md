@@ -1,686 +1,758 @@
-# \# Zepto AI/ML Capstone Project
 
-# 
+# Zepto AI/ML Capstone Project
 
-# \## Overview
+## Data Pipeline • Analytics Pipeline • Support Assistant
 
-# 
+This repository contains my Capstone Project for the Certificate Program in Artificial Intelligence and Machine Learning.
 
-# This project is my Capstone submission for the Certificate Program in Artificial Intelligence and Machine Learning.
+The project demonstrates an end-to-end data workflow starting from web data collection and continuing through data cleaning, database storage, analytics, and a catalogue-based support assistant.
 
-# 
+Instead of treating each task as an independent project, the three modules are connected through a common SQLite database created by the data pipeline.
 
-# The objective of the project is to build one connected platform covering three different areas of an AI/ML engineering workflow:
+---
 
-# 
+## Project Overview
 
-# \- collecting and preparing data
+The project consists of three connected modules:
 
-# \- analysing the prepared data and generating business insights
+### Module 1 — Data Pipeline
+
+Collects book data from a public website, cleans and transforms the data, converts prices from GBP to INR, stores the processed data in SQLite, and performs SQL validation.
+
+**Workflow:**
+
+`Scrape → Clean → Convert → Store → Query → Validate`
+
+### Module 2 — Analytics Pipeline
+
+Uses the structured data produced by Module 1 to analyse categories, ratings, prices, rankings, and business-oriented insights.
+
+**Workflow:**
+
+`Load Data → Analyse → Rank → Generate Insights → Save Results → Verify`
+
+### Module 3 — Support Assistant
+
+Uses the same SQLite catalogue created by Module 1 to provide book search and recommendation functionality based on category, price, and rating constraints.
+
+**Workflow:**
+
+`Load SQLite Data → Search → Filter → Recommend → Save Results → Verify`
+
+---
+
+# Project Architecture
+
+```text
+                    PUBLIC WEB SOURCE
+                           │
+                           ▼
+              ┌─────────────────────────┐
+              │     MODULE 1             │
+              │     DATA PIPELINE        │
+              │                         │
+              │ Scraping                │
+              │ Cleaning                │
+              │ Transformation          │
+              │ Currency Conversion     │
+              │ SQLite Storage           │
+              │ SQL Validation          │
+              └────────────┬────────────┘
+                           │
+                           │ books.db
+                           ▼
+              ┌─────────────────────────┐
+              │     MODULE 2             │
+              │  ANALYTICS PIPELINE      │
+              │                         │
+              │ Category Analysis       │
+              │ Rating Analysis         │
+              │ Price Analysis          │
+              │ Rankings                │
+              │ Business Insights       │
+              └─────────────────────────┘
 
-# \- building a support assistant using the structured data
+                           │
+                           │ Same SQLite Catalogue
+                           ▼
 
-# 
+              ┌─────────────────────────┐
+              │     MODULE 3             │
+              │   SUPPORT ASSISTANT      │
+              │                         │
+              │ Book Search             │
+              │ Filtering               │
+              │ Recommendations         │
+              │ CSV Results             │
+              └─────────────────────────┘
 
-# The complete project is maintained in a single GitHub repository, as required by the Capstone instructions.
 
-# 
+---
 
-# \---
+Repository Structure
 
-# 
+zepto-ai-ml-capstone/
+│
+├── data_pipeline/
+│   ├── data/
+│   │   ├── books_raw.csv
+│   │   ├── books_clean.csv
+│   │   └── books.db
+│   │
+│   ├── outputs/
+│   │   └── sql_results/
+│   │
+│   ├── src/
+│   │   ├── scrape_books.py
+│   │   ├── clean_and_store.py
+│   │   ├── run_sql_checks.py
+│   │   └── verify_pipeline.py
+│   │
+│   ├── README.md
+│   └── requirements.txt
+│
+├── analytics/
+│   ├── outputs/
+│   │
+│   ├── src/
+│   │   ├── analytics.py
+│   │   └── verify_analytics.py
+│   │
+│   ├── README.md
+│   └── requirements.txt
+│
+├── support_assistant/
+│   ├── outputs/
+│   │   ├── last_search_results.csv
+│   │   └── recommendations.csv
+│   │
+│   ├── src/
+│   │   ├── assistant.py
+│   │   └── verify_assistant.py
+│   │
+│   ├── README.md
+│   └── requirements.txt
+│
+├── tests/
+│
+├── .gitignore
+├── requirements.txt
+└── README.md
 
-# \## Project Modules
 
-# 
+---
 
-# | Module | Description | Main Focus |
+Technology Stack
 
-# |---|---|---|
+The project uses the following technologies:
 
-# | Module 1 | Data Pipeline | Web scraping, data cleaning, currency conversion, SQLite, SQL and pandas |
+Python
 
-# | Module 2 | Analytics Pipeline | Data analysis, rankings, price/rating analysis and business insights |
+Pandas
 
-# | Module 3 | Support Assistant | Book search and recommendation functionality |
+NumPy
 
-# 
+Requests
 
-# \---
+BeautifulSoup
 
-# 
+SQLite
 
-# \# Project Structure
+SQL
 
-# 
+Scikit-learn
 
-# ```text
+Matplotlib
 
-# zepto-ai-ml-capstone/
+Seaborn
 
-# │
+Plotly
 
-# ├── data\_pipeline/
+OpenPyXL
 
-# │   ├── data/
+SQLAlchemy
 
-# │   │   ├── books\_raw.csv
+Pytest
 
-# │   │   ├── books\_clean.csv
+Git
 
-# │   │   └── books.db
+GitHub
 
-# │   │
 
-# │   ├── outputs/
 
-# │   │   └── sql\_results/
+---
 
-# │   │
+Requirements
 
-# │   └── src/
+Python 3.x is required.
 
-# │       ├── scrape\_books.py
+The repository contains:
 
-# │       ├── clean\_and\_store.py
+A root requirements.txt for the complete project
 
-# │       ├── run\_sql\_checks.py
+A separate requirements.txt inside each module for module-specific dependencies
 
-# │       └── verify\_pipeline.py
 
-# │
+The recommended approach is to install the root requirements once from the project root.
 
-# ├── analytics/
 
-# │   ├── outputs/
+---
 
-# │   └── src/
+Setup
 
-# │       ├── analytics.py
+1. Clone the Repository
 
-# │       └── verify\_analytics.py
+git clone https://github.com/rugved-cmd/zepto-ai-ml-capstone.git
+cd zepto-ai-ml-capstone
 
-# │
+2. Create a Virtual Environment
 
-# ├── support\_assistant/
+Windows
 
-# │   ├── outputs/
+python -m venv .venv
 
-# │   │   ├── last\_search\_results.csv
+Activate the environment:
 
-# │   │   └── recommendations.csv
+.venv\Scripts\Activate.ps1
 
-# │   │
+If PowerShell activation is not available, the environment can also be activated using:
 
-# │   └── src/
+.venv\Scripts\activate
 
-# │       ├── assistant.py
+3. Install Project Dependencies
 
-# │       └── verify\_assistant.py
+pip install -r requirements.txt
 
-# │
 
-# ├── requirements.txt
+---
 
-# └── README.md
+How to Run the Complete Project
 
-# Technology Stack
+The modules should be executed in order because Module 2 and Module 3 use the structured data created by Module 1.
 
-# Python
+Step 1 — Run Module 1
 
-# Pandas
+1. Scrape the data
 
-# Requests
+python data_pipeline/src/scrape_books.py
 
-# BeautifulSoup
+This collects the book data and creates the raw dataset.
 
-# SQLite
+2. Clean the data and create the database
 
-# SQL
+python data_pipeline/src/clean_and_store.py
 
-# Git
+This cleans and transforms the data and creates the SQLite database.
 
-# GitHub
+3. Run SQL validation
 
-# Setup
+python data_pipeline/src/run_sql_checks.py
 
-# Requirements
+This executes the required SQL checks and stores the generated results.
 
-# 
+4. Verify Module 1
 
-# Python 3.x is required.
+python data_pipeline/src/verify_pipeline.py
 
-# 
+This verifies the complete data pipeline.
 
-# The project uses one consolidated requirements.txt file at the root of the repository.
 
-# 
+---
 
-# 1\. Clone the Repository
+Step 2 — Run Module 2
 
-# git clone <(https://github.com/rugved-cmd/zepto-ai-ml-capstone)>
+After Module 1 has successfully completed, run the analytics pipeline.
 
-# cd zepto-ai-ml-capstone
+1. Generate analytics
 
-# 2\. Create a Virtual Environment
+python analytics/src/analytics.py
 
-# Windows
+This analyses the structured book dataset and generates analytical outputs.
 
-# python -m venv .venv
+2. Verify Module 2
 
-# 
+python analytics/src/verify_analytics.py
 
-# Activate it:
+This checks whether the expected analytics outputs were generated correctly.
 
-# 
 
-# .venv\\Scripts\\Activate.ps1
+---
 
-# 3\. Install Dependencies
+Step 3 — Run Module 3
 
-# pip install -r requirements.txt
+After Module 1 has successfully created the SQLite database, the support assistant can be executed.
 
-# Module 1 — Data Pipeline
+1. Run the Support Assistant
 
-# Objective
+python support_assistant/src/assistant.py
 
-# 
+The assistant provides book search and recommendation functionality.
 
-# The first module builds an end-to-end data pipeline starting from a public web scraping source.
+2. Verify Module 3
 
-# 
+python support_assistant/src/verify_assistant.py
 
-# The workflow is:
+This verifies:
 
-# 
+SQLite database connectivity
 
-# Scrape → Clean → Convert → Store → Query → Validate
+Book search
 
-# 
+Recommendation functionality
 
-# The source used is:
+Recommendation constraints
 
-# 
+Generated output files
 
-# Books to Scrape
 
-# 
 
-# The scraper collects book information from at least three categories and produces a dataset containing more than the required 60 books.
+---
 
-# 
+Complete Execution Order
 
-# Data Collected
+For a fresh end-to-end execution, use the following order:
 
-# 
+MODULE 1 — DATA PIPELINE
+        │
+        ├── scrape_books.py
+        ├── clean_and_store.py
+        ├── run_sql_checks.py
+        └── verify_pipeline.py
+        │
+        ▼
+MODULE 2 — ANALYTICS PIPELINE
+        │
+        ├── analytics.py
+        └── verify_analytics.py
+        │
+        ▼
+MODULE 3 — SUPPORT ASSISTANT
+        │
+        ├── assistant.py
+        └── verify_assistant.py
 
-# For each book, the pipeline collects:
+Commands in Order
 
-# 
+python data_pipeline/src/scrape_books.py
 
-# Title
+python data_pipeline/src/clean_and_store.py
 
-# Price in GBP
+python data_pipeline/src/run_sql_checks.py
 
-# Star rating
+python data_pipeline/src/verify_pipeline.py
 
-# Availability
+python analytics/src/analytics.py
 
-# Category
+python analytics/src/verify_analytics.py
 
-# Data Cleaning
+python support_assistant/src/assistant.py
 
-# 
+python support_assistant/src/verify_assistant.py
 
-# The scraped data is converted into appropriate data types.
 
-# 
+---
 
-# The following transformations are performed:
+Module 1 — Data Pipeline
 
-# 
+Purpose
 
-# GBP price is converted into a numeric price\_gbp value.
+Module 1 builds the foundation of the complete project.
 
-# Text ratings such as One, Two, Three, Four, and Five are converted into integer values from 1 to 5.
+It collects book information from a public web source and prepares the data for the remaining modules.
 
-# Availability is converted into a boolean-style stock field.
+Main Operations
 
-# Invalid or incomplete records are handled during the cleaning stage.
+Web scraping
 
-# Duplicate books are removed where required.
+Data cleaning
 
-# Currency Conversion
+Data transformation
 
-# 
+Rating conversion
 
-# The project uses the fixed conversion rate specified in the Capstone instructions:
+Price conversion
 
-# 
+Currency conversion
 
-# 1 GBP = 105.50 INR
+SQLite database creation
 
-# 
+SQL querying
 
-# This is a project-defined fixed rate and does not use a live currency API.
+SQL JOIN validation
 
-# 
+Pandas validation
 
-# The INR price is calculated using:
+End-to-end verification
 
-# 
 
-# price\_inr = price\_gbp × 105.50
+Data Source
 
-# Database
+The project uses Books to Scrape as the public web source.
 
-# 
+Data Collected
 
-# The cleaned data is stored in SQLite.
+The pipeline collects:
 
-# 
+Book title
 
-# The database follows a normalized structure with:
+Price in GBP
 
-# 
+Star rating
 
-# categories
+Availability
 
-# books
+Category
 
-# 
 
-# The tables are connected using a primary key and foreign key relationship.
+Currency Conversion
 
-# 
+The Capstone-defined fixed conversion rate is:
 
-# Run Module 1
+1 GBP = 105.50 INR
 
-# Step 1 — Scrape the data
+The INR price is calculated as:
 
-# python data\_pipeline/src/scrape\_books.py
+price_inr = price_gbp × 105.50
 
-# Step 2 — Clean the data and create the database
+Database
 
-# python data\_pipeline/src/clean\_and\_store.py
+The cleaned data is stored in SQLite.
 
-# Step 3 — Run SQL validation
+The database is available at:
 
-# python data\_pipeline/src/run\_sql\_checks.py
+data_pipeline/data/books.db
 
-# 
+The module uses a normalized database structure containing related category and book information.
 
-# The SQL validation demonstrates:
+Module Documentation
 
-# 
+Detailed Module 1 documentation is available at:
 
-# SELECT
+data_pipeline/README.md
 
-# WHERE
 
-# ORDER BY
+---
 
-# LIMIT
+Module 2 — Analytics Pipeline
 
-# DISTINCT
+Purpose
 
-# IN
+Module 2 analyses the structured dataset created by Module 1.
 
-# BETWEEN
+Main Analysis Areas
 
-# JOIN
+Category performance
 
-# 
+Rating distribution
 
-# The project also compares the JOIN result produced using SQL with the equivalent result generated using pandas merge().
+Price analysis
 
-# 
+Most expensive books
 
-# Step 4 — Verify the complete pipeline
+Highly-rated books
 
-# python data\_pipeline/src/verify\_pipeline.py
+Affordable books
 
-# Module 2 — Analytics Pipeline
+Rankings
 
-# Objective
+Business-oriented insights
 
-# 
 
-# The second module uses the structured data produced by Module 1 and performs analysis to extract useful information from the dataset.
+Data Source
 
-# 
+Module 2 uses:
 
-# The analysis includes:
+data_pipeline/data/books.db
 
-# 
+Outputs
 
-# Category performance
+Analytical results are stored in:
 
-# Rating distribution
+analytics/outputs/
 
-# Price analysis
+Module Documentation
 
-# Most expensive books
+Detailed Module 2 documentation is available at:
 
-# Highest-rated books
+analytics/README.md
 
-# Affordable books
 
-# Business insights
+---
 
-# 
+Module 3 — Support Assistant
 
-# The outputs are saved inside the analytics/outputs/ directory.
+Purpose
 
-# 
+Module 3 provides a simple catalogue-based support assistant.
 
-# Run Module 2
+It uses the same structured SQLite database created by Module 1.
 
-# python analytics/src/analytics.py
+Features
 
-# Verify Module 2
+Book search
 
-# python analytics/src/verify\_analytics.py
+Keyword-based search
 
-# 
+Category filtering
 
-# The verification checks the generated analytical outputs and confirms that the expected results are present.
+Maximum price filtering
 
-# 
+Minimum rating filtering
 
-# Module 3 — Support Assistant
+Book recommendations
 
-# Objective
+Search result export
 
-# 
+Recommendation result export
 
-# The third module provides a simple support assistant based on the structured book catalogue.
 
-# 
+Data Source
 
-# It allows users to search for books and generate recommendations using different constraints.
+The assistant uses:
 
-# 
+data_pipeline/data/books.db
 
-# The recommendation functionality supports filtering based on:
+This means Module 3 does not maintain a separate copy of the book catalogue.
 
-# 
+Outputs
 
-# Category
+The generated results are stored in:
 
-# Price
+support_assistant/outputs/
 
-# Rating
+The main output files are:
 
-# 
+last_search_results.csv
+recommendations.csv
 
-# The generated search and recommendation results are saved as CSV files.
+Module Documentation
 
-# 
+Detailed Module 3 documentation is available at:
 
-# Run Module 3
+support_assistant/README.md
 
-# python support\_assistant/src/assistant.py
 
-# Verify Module 3
+---
 
-# python support\_assistant/src/verify\_assistant.py
+Verification
 
-# 
+Each module contains its own verification script.
 
-# The verification checks:
+Module 1
 
-# 
+python data_pipeline/src/verify_pipeline.py
 
-# database connectivity
+Verifies the data pipeline, cleaned data, database, SQL operations, JOIN logic, and pandas operations.
 
-# book search
+Module 2
 
-# recommendation results
+python analytics/src/verify_analytics.py
 
-# recommendation constraints
+Verifies the generated analytical outputs.
 
-# generated output files
+Module 3
 
-# End-to-End Execution
+python support_assistant/src/verify_assistant.py
 
-# 
+Verifies database connectivity, search, recommendations, constraints, and generated files.
 
-# To reproduce the project from the beginning, run the modules in the following order.
+The verification scripts are included to make the project easier to reproduce and evaluate.
 
-# 
 
-# Module 1
+---
 
-# python data\_pipeline/src/scrape\_books.py
+Key Results
 
-# python data\_pipeline/src/clean\_and\_store.py
+The current project dataset contains:
 
-# python data\_pipeline/src/run\_sql\_checks.py
+Metric	Result
 
-# python data\_pipeline/src/verify\_pipeline.py
+Books	69
+Categories	3
+Rating Groups	5
+GBP → INR Rate	1 GBP = 105.50 INR
 
-# Module 2
 
-# python analytics/src/analytics.py
+The project demonstrates:
 
-# python analytics/src/verify\_analytics.py
+Web scraping
 
-# Module 3
+Data cleaning
 
-# python support\_assistant/src/assistant.py
+Data transformation
 
-# python support\_assistant/src/verify\_assistant.py
+Currency conversion
 
-# Verification Results
+Relational database design
 
-# 
+SQLite
 
-# The completed project was tested using dedicated verification scripts.
+SQL querying
 
-# 
+SQL JOIN operations
 
-# Module 1
+Pandas data processing
 
-# 
+Analytics
 
-# The pipeline verifies:
+Business insight generation
 
-# 
+Search functionality
 
-# required files
+Recommendation logic
 
-# scraped dataset
+Automated verification
 
-# book count
 
-# category count
 
-# cleaned fields
+---
 
-# fixed GBP-to-INR conversion
+Design Decisions
 
-# SQLite database
+Why Requests and BeautifulSoup?
 
-# SQL queries
+Requests and BeautifulSoup are used for collecting structured information from the public web source required for the data pipeline.
 
-# JOIN operation
+Why SQLite?
 
-# pandas read\_sql
+SQLite provides a lightweight relational database that does not require a separate database server.
 
-# pandas merge
+It is suitable for this project because the dataset is relatively small and the database can be easily reproduced and inspected.
 
-# Module 2
+Why Pandas?
 
-# 
+Pandas is used for data cleaning, transformation, analysis, filtering, ranking, and comparison operations.
 
-# The analytics verification confirms:
+Why a Fixed Currency Rate?
 
-# 
+The project follows the Capstone-defined conversion rate:
 
-# required output files
+1 GBP = 105.50 INR
 
-# category performance
+A live currency API is not required for this implementation.
 
-# rating analysis
+Why Share One Database?
 
-# price analysis
+Modules 2 and 3 use the database produced by Module 1.
 
-# ranked book outputs
+This avoids duplicate datasets and ensures that the complete project follows one connected data flow.
 
-# business insights
 
-# Module 3
+---
 
-# 
+Reproducibility
 
-# The support assistant verification confirms:
+The project is organized so that another user can reproduce the workflow by:
 
-# 
+1. Cloning the repository
 
-# SQLite database connection
 
-# book search
+2. Creating a Python virtual environment
 
-# recommendation engine
 
-# recommendation constraints
+3. Installing the required dependencies
 
-# generated output files
 
-# Key Results
+4. Running Module 1
 
-# 
 
-# The current project dataset contains:
+5. Verifying Module 1
 
-# 
 
-# 69 books
+6. Running Module 2
 
-# 3 categories
 
-# 5 rating groups
+7. Verifying Module 2
 
-# Fixed conversion rate of 1 GBP = 105.50 INR
 
-# 
+8. Running Module 3
 
-# The project also successfully demonstrates:
 
-# 
+9. Verifying Module 3
 
-# Web scraping
 
-# Data cleaning
 
-# Data transformation
+The module-level README files provide additional details for each stage.
 
-# Relational database design
 
-# SQL querying
+---
 
-# Pandas analysis
+GitHub Repository
 
-# Business insight generation
+The complete source code and documentation are available here:
 
-# Search and recommendation logic
+https://github.com/rugved-cmd/zepto-ai-ml-capstone
 
-# End-to-end verification
 
-# Design Decisions
+---
 
-# Module 1
+Academic Integrity
 
-# 
+This project was developed as my Capstone submission for the Certificate Program in Artificial Intelligence and Machine Learning.
 
-# I used requests and BeautifulSoup because the project requires scraping from a public website.
+Official documentation and learning resources were used where necessary, while the project implementation, testing, documentation, and verification were completed as part of the capstone development process.
 
-# 
 
-# SQLite was selected because it provides a lightweight relational database without requiring a separate database server.
+---
 
-# 
+Author
 
-# The book and category information is separated into related tables to avoid unnecessary duplication and to satisfy the normalized database requirement.
+Rugved
 
-# 
+B.Tech — Computer Science and Engineering
 
-# The fixed project conversion rate was used instead of a live currency API because the Capstone explicitly defines the baseline as 1 GBP = 105.50 INR.
+AI/ML | Python | Data Analytics | SQL
 
-# 
 
-# Module 2
+---
 
-# 
+Project Summary
 
-# I used pandas for the analytical workflow because the dataset is structured and can be efficiently grouped, filtered and ranked using DataFrames.
+The project demonstrates a complete data-to-application workflow:
 
-# 
+Public Web Data
+      ↓
+Data Collection
+      ↓
+Data Cleaning & Transformation
+      ↓
+SQLite Database
+      ↓
+SQL Validation
+      ↓
+Analytics & Business Insights
+      ↓
+Search & Recommendation Assistant
+      ↓
+Verification
 
-# The analysis focuses on information that can be interpreted from a business perspective, such as pricing, ratings and category performance.
+The three modules together demonstrate how raw data can be transformed into structured information, analysed for insights, and finally used to build a simple user-oriented support system.
 
-# 
+### One important thing, bro
 
-# Module 3
+Your **root README** should be this one.
 
-# 
+Your three module READMEs should remain:
 
-# The support assistant uses the structured catalogue created in Module 1 rather than maintaining a separate copy of the data.
+```text
+data_pipeline/README.md
+analytics/README.md
+support_assistant/README.md
 
-# 
+So your final documentation structure is:
 
-# This keeps the three modules connected and allows the search and recommendation functionality to work with the same cleaned data source.
+README.md                         ← MAIN PROJECT README
+│
+├── data_pipeline/
+│   ├── README.md                ← MODULE 1 README
+│   └── requirements.txt
+│
+├── analytics/
+│   ├── README.md                ← MODULE 2 README
+│   └── requirements.txt
+│
+└── support_assistant/
+    ├── README.md                ← MODULE 3 README
+    └── requirements.txt
 
-# 
-
-# Git Workflow
-
-# 
-
-# The project was developed using Git and a feature branch.
-
-# 
-
-# The main development branch used for the project is:
-
-# 
-
-# feature/capstone-development
-
-# 
-
-# The repository also contains the main branch.
-
-# 
-
-# The Git history contains multiple commits representing the development of the project.
-
-# 
-
-# Academic Integrity
-
-# 
-
-# This project was developed as my Capstone submission.
-
-# 
-
-# I used official documentation and learning resources when required, while implementing and testing the project myself.
-
-# 
-
-# I have also included verification scripts so that the main functionality can be checked after setup.
-
-# 
-
-# Author
-
-# 
-
-# Rugved
-
-# 
-
-# B.Tech — Computer Science and Engineering
 
