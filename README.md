@@ -158,7 +158,7 @@
 
 # 1\. Clone the Repository
 
-# git clone <YOUR\_GITHUB\_REPOSITORY\_URL>
+# git clone <(https://github.com/rugved-cmd/zepto-ai-ml-capstone)>
 
 # cd zepto-ai-ml-capstone
 
